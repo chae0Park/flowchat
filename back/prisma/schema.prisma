@@ -1,0 +1,321 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  status    String   @default("offline")
+  role      UserRole @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastActive DateTime @default(now())
+
+  // Preferences
+  preferences Json @default("{}")
+
+  // Password
+  password String
+
+  // Relationships
+  workspaces        WorkspaceMember[]
+  messages          Message[]
+  reactions         Reaction[]
+  pollVotes         PollVote[]
+  eventAttendees    EventAttendee[]
+  createdWorkflows  Workflow[]
+  createdChannels   Channel[]
+  createdPolls      Poll[]
+  createdEvents     Event[]
+  fileUploads       FileAttachment[]
+  channelMemberships ChannelMember[] 
+
+  // Refresh tokens
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Workspace {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  domain      String            @unique
+  visibility  WorkspaceVisibility @default(PRIVATE)
+  ownerId     String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Settings
+  settings Json @default("{}") // 권한/테마/기타 설정
+
+  // Relationships
+  members   WorkspaceMember[]
+  channels  Channel[]
+  polls     Poll[]
+  events    Event[]
+  workflows Workflow[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        UserRole  @default(MEMBER)
+  joinedAt    DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+model Channel {
+  id          String        @id @default(cuid())
+  workspaceId String
+  name        String
+  description String?
+  type        ChannelType   @default(CHANNEL)
+  visibility  ChannelVisibility @default(PUBLIC)
+  createdBy   String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id])
+
+  // Relationships
+  messages Message[]
+  members  ChannelMember[]
+  polls    Poll[]  
+
+  @@unique([workspaceId, name])
+  @@map("channels")
+}
+
+model ChannelMember {
+  id        String   @id @default(cuid())
+  channelId String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([channelId, userId])
+  @@map("channel_members")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  channelId String
+  userId    String
+  content   String
+  type      MessageType @default(MESSAGE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  editedAt  DateTime?
+  replyTo   String?
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relationships
+  reactions Reaction[]
+  files     FileAttachment[]
+
+  @@map("messages")
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@map("reactions")
+}
+
+model FileAttachment {
+  id         String   @id @default(cuid())
+  messageId  String?
+  name       String
+  size       Int
+  type       String
+  url        String
+  uploadedBy String
+  uploadedAt DateTime @default(now())
+
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  uploader User    @relation(fields: [uploadedBy], references: [id])
+
+  @@map("file_attachments")
+}
+
+model Poll {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  channelId     String?
+  title         String
+  description   String?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime?
+  isActive      Boolean  @default(true)
+  allowMultiple Boolean  @default(false)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id])
+
+  // Relationships
+  options PollOption[]
+  channel Channel? @relation(fields: [channelId], references: [id])
+
+  @@map("polls")
+}
+
+model PollOption {
+  id     String @id @default(cuid())
+  pollId String
+  text   String
+
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  // Relationships
+  votes PollVote[]
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id       String   @id @default(cuid())
+  optionId String
+  userId   String
+  createdAt DateTime @default(now())
+
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, userId])
+  @@map("poll_votes")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  workspaceId String
+  title       String
+  description String?
+  date        DateTime
+  time        String?
+  duration    String?
+  location    String?
+  type        EventType @default(EVENT)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id])
+
+  // Relationships
+  attendees EventAttendee[]
+
+  @@map("events")
+}
+
+model EventAttendee {
+  id      String @id @default(cuid())
+  eventId String
+  userId  String
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_attendees")
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  description String
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
+  runCount    Int      @default(0)
+  lastRun     DateTime?
+
+  // Trigger and Actions stored as JSON
+  trigger Json
+  actions Json
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id])
+
+  @@map("workflows")
+}
+
+// Enums
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum WorkspaceVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ChannelType {
+  CHANNEL
+  DM
+}
+
+enum ChannelVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum MessageType {
+  MESSAGE
+  SYSTEM
+}
+
+enum EventType {
+  MEETING
+  DEADLINE
+  EVENT
+}

@@ -97,13 +97,6 @@ const LandingPage: React.FC = () => {
                 </button>
               </li>
             </ul>
-            <button 
-              onClick={handleGetStarted}
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-1 transition-all flex items-center gap-2"
-            >
-              지금 시작하기
-              <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </nav>
@@ -157,7 +150,7 @@ const LandingPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
             {[
-              { icon: MessageCircle, emoji: '💬', title: '채널 기반 소통', desc: '공개/비공개 채널로 주제별 커뮤니케이션이 가능합니다. 팀원들과 체계적으로 소통하세요.' },
+              { emoji: '💬', title: '채널 기반 소통', desc: '공개/비공개 채널로 주제별 커뮤니케이션이 가능합니다. 팀원들과 체계적으로 소통하세요.' },
               { icon: Search, emoji: '🔍', title: '강력한 검색 기능', desc: '메시지, 파일, 링크 등 모든 정보에 대한 빠르고 정확한 검색을 제공합니다.' },
               { icon: Upload, emoji: '📁', title: '파일 공유', desc: '이미지, 문서, 동영상 등 다양한 형식의 파일을 쉽게 전송하고 미리보기할 수 있습니다.' },
               { icon: Link, emoji: '🔗', title: '외부 앱 연동', desc: '구글 드라이브, 깃허브, 노션, 트렐로 등 다양한 앱과 완벽하게 통합됩니다.' },
@@ -167,7 +160,7 @@ const LandingPage: React.FC = () => {
               <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all border border-indigo-100 dark:border-gray-700 animate-on-scroll">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="text-3xl">{feature.emoji}</span>
-                  <feature.icon className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
+                  {/* <feature.icon className="w-6 h-6 text-indigo-500 dark:text-indigo-400" /> */}
                 </div>
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">{feature.title}</h3>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{feature.desc}</p>

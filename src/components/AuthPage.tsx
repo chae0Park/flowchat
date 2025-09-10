@@ -1,11 +1,11 @@
+// src/components/AuthPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { MessageCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -15,28 +15,50 @@ const AuthPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   
-  const { login, signup, loginDemo } = useAuth();
+  const {
+    login,
+    signup,
+    loginDemo,
+    isLoading,
+    loginError,
+    signupError,
+    demoLoginError,
+  } = useAuth();
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
 
     try {
       if (isLogin) {
-        await login(formData.email, formData.password);
+        await login({ email: formData.email, password: formData.password });
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('비밀번호가 일치하지 않습니다.');
         }
-        await signup(formData.name, formData.email, formData.password);
+        await signup({ 
+          name: formData.name, 
+          email: formData.email, 
+          password: formData.password 
+        });
       }
       navigate('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.error || err?.message || '오류가 발생했습니다.';
+      setError(errorMessage);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError('');
+    try {
+      await loginDemo();
+      navigate('/dashboard');
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.error || err?.message || '데모 로그인에 실패했습니다.';
+      setError(errorMessage);
     }
   };
 
@@ -46,6 +68,9 @@ const AuthPage: React.FC = () => {
       [e.target.name]: e.target.value
     });
   };
+
+  // Display the most relevant error
+  const displayError = error || loginError?.message || signupError?.message || demoLoginError?.message;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center px-4">
@@ -75,7 +100,10 @@ const AuthPage: React.FC = () => {
           <div className="mb-6">
             <div className="flex bg-gray-100 rounded-full p-1">
               <button
-                onClick={() => setIsLogin(true)}
+                onClick={() => {
+                  setIsLogin(true);
+                  setError('');
+                }}
                 className={`flex-1 py-3 px-4 rounded-full font-semibold transition-all ${
                   isLogin 
                     ? 'bg-white text-indigo-600 shadow-sm' 
@@ -85,7 +113,10 @@ const AuthPage: React.FC = () => {
                 로그인
               </button>
               <button
-                onClick={() => setIsLogin(false)}
+                onClick={() => {
+                  setIsLogin(false);
+                  setError('');
+                }}
                 className={`flex-1 py-3 px-4 rounded-full font-semibold transition-all ${
                   !isLogin 
                     ? 'bg-white text-indigo-600 shadow-sm' 
@@ -97,6 +128,7 @@ const AuthPage: React.FC = () => {
             </div>
           </div>
 
+          {/* 회원가입 폼 */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
@@ -171,9 +203,9 @@ const AuthPage: React.FC = () => {
               </div>
             )}
 
-            {error && (
+            {displayError && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600 text-sm">
-                {error}
+                {displayError}
               </div>
             )}
 
@@ -199,21 +231,11 @@ const AuthPage: React.FC = () => {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">또는</span>
+                <span className="px-2 text-gray-500">또는</span>
               </div>
             </div>
             <button
-              onClick={async () => {
-                setIsLoading(true);
-                try {
-                  await loginDemo();
-                  navigate('/dashboard');
-                } catch (err) {
-                  setError('데모 로그인에 실패했습니다.');
-                } finally {
-                  setIsLoading(false);
-                }
-              }}
+              onClick={handleDemoLogin}
               disabled={isLoading}
               className="mt-4 w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
@@ -230,7 +252,10 @@ const AuthPage: React.FC = () => {
 
           {isLogin && (
             <div className="mt-6 text-center">
-              <button className="text-indigo-600 hover:text-indigo-800 transition-colors font-medium" onClick={() => navigate('/password-recovery')}>
+              <button 
+                className="text-indigo-600 hover:text-indigo-800 transition-colors font-medium" 
+                onClick={() => navigate('/password-recovery')}
+              >
                 비밀번호를 잊으셨나요?
               </button>
             </div>
@@ -240,7 +265,10 @@ const AuthPage: React.FC = () => {
             <p>
               {isLogin ? '계정이 없으신가요?' : '이미 계정이 있으신가요?'}
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
                 className="ml-2 text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
               >
                 {isLogin ? '회원가입' : '로그인'}

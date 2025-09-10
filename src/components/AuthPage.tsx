@@ -128,7 +128,7 @@ const AuthPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 회원가입 폼 */}
+          {/* 회원가입& 로그인 폼 */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>

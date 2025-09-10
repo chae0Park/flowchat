@@ -48,10 +48,17 @@ class ApiClient {
       },
     });
 
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
     // Request interceptor to add token
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('accessToken');
+        // Get token from auth store instead of localStorage directly
+        const authState = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+        const token = authState?.state?.accessToken;
+        
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -70,7 +77,9 @@ class ApiClient {
           originalRequest._retry = true;
 
           try {
-            const refreshToken = localStorage.getItem('refreshToken');
+            const authState = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+            const refreshToken = authState?.state?.refreshToken;
+            
             if (!refreshToken) {
               throw new Error('No refresh token');
             }
@@ -79,17 +88,36 @@ class ApiClient {
               refreshToken,
             });
 
-            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-            
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', newRefreshToken);
+            if (response.data.success) {
+              const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+              
+              // Update the auth store
+              const currentState = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+              const newState = {
+                ...currentState,
+                state: {
+                  ...currentState.state,
+                  accessToken,
+                  refreshToken: newRefreshToken,
+                }
+              };
+              localStorage.setItem('auth-storage', JSON.stringify(newState));
 
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            return this.client(originalRequest);
+              // Retry the original request
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+              return this.client(originalRequest);
+            }
           } catch (refreshError) {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/auth';
+            console.error('Token refresh failed:', refreshError);
+            
+            // Clear auth state
+            localStorage.removeItem('auth-storage');
+            
+            // Redirect to auth page
+            if (typeof window !== 'undefined') {
+              window.location.href = '/auth';
+            }
+            
             return Promise.reject(refreshError);
           }
         }
@@ -101,41 +129,84 @@ class ApiClient {
 
   // Auth endpoints
   async login(data: LoginRequest): Promise<ApiResponse<AuthResponse>> {
-    const response: AxiosResponse<ApiResponse<AuthResponse>> = await this.client.post('/auth/login', data);
-    return response.data;
+    try {
+      const response: AxiosResponse<ApiResponse<AuthResponse>> = await this.client.post('/auth/login', data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   }
 
   async register(data: RegisterRequest): Promise<ApiResponse<AuthResponse>> {
-    const response: AxiosResponse<ApiResponse<AuthResponse>> = await this.client.post('/auth/register', data);
-    return response.data;
+    try {
+      const response: AxiosResponse<ApiResponse<AuthResponse>> = await this.client.post('/auth/register', data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Register API error:', error);
+      throw error;
+    }
   }
 
   async logout(): Promise<ApiResponse> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    const response: AxiosResponse<ApiResponse> = await this.client.post('/auth/logout', { refreshToken });
-    return response.data;
+    try {
+      const authState = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+      const refreshToken = authState?.state?.refreshToken;
+      
+      const response: AxiosResponse<ApiResponse> = await this.client.post('/auth/logout', { 
+        refreshToken 
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Logout API error:', error);
+      throw error;
+    }
   }
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
-    const response: AxiosResponse<ApiResponse<User>> = await this.client.get('/auth/me');
-    return response.data;
+    try {
+      const response: AxiosResponse<ApiResponse<User>> = await this.client.get('/auth/me');
+      return response.data;
+    } catch (error: any) {
+      console.error('Get current user API error:', error);
+      throw error;
+    }
   }
 
   async refreshToken(): Promise<ApiResponse<{ accessToken: string; refreshToken: string }>> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    const response: AxiosResponse<ApiResponse<{ accessToken: string; refreshToken: string }>> = 
-      await this.client.post('/auth/refresh', { refreshToken });
-    return response.data;
+    try {
+      const authState = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+      const refreshToken = authState?.state?.refreshToken;
+      
+      const response: AxiosResponse<ApiResponse<{ accessToken: string; refreshToken: string }>> = 
+        await this.client.post('/auth/refresh', { refreshToken });
+      return response.data;
+    } catch (error: any) {
+      console.error('Refresh token API error:', error);
+      throw error;
+    }
   }
 
-  // Demo login method
+  // Demo login method - 실제 데모 계정으로 로그인
   async loginDemo(): Promise<ApiResponse<AuthResponse>> {
-    // Demo 계정으로 로그인 (백엔드에서 지원한다면)
-    const demoCredentials = {
-      email: 'demo@flowtalk.com',
-      password: 'demo123'
-    };
-    return this.login(demoCredentials);
+    try {
+      // 실제 데모 계정 정보 사용
+      const demoCredentials = {
+        email: 'demo@flowtalk.com',
+        password: 'demo123'
+      };
+      
+      // 백엔드에 데모 계정이 없다면 일반 로그인 사용
+      const response = await this.login(demoCredentials);
+      return response;
+    } catch (error: any) {
+      console.error('Demo login API error:', error);
+      // 데모 계정이 없다면 에러 메시지 변경
+      if (error?.response?.status === 401) {
+        throw new Error('데모 계정을 찾을 수 없습니다. 관리자에게 문의하세요.');
+      }
+      throw error;
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 // src/stores/authStore.ts
+//purpose: Manage authentication state using Zustand with persistence
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient, User, AuthResponse } from '../services/api';
@@ -20,6 +21,7 @@ interface AuthActions {
   setUser: (user: User) => void;
   clearAuth: () => void;
   refreshUserData: () => Promise<void>;
+  initializeAuth: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -45,10 +47,6 @@ export const useAuthStore = create<AuthStore>()(
           if (response.success && response.data) {
             const { user, accessToken, refreshToken } = response.data;
             
-            // Store tokens in localStorage for API client interceptors
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
-            
             set({
               user,
               accessToken,
@@ -59,9 +57,9 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             throw new Error(response.error || '로그인에 실패했습니다.');
           }
-        } catch (error) {
+        } catch (error: any) {
           set({ isLoading: false });
-          throw error;
+          throw new Error(error?.response?.data?.error || error?.message || '로그인에 실패했습니다.');
         }
       },
 
@@ -73,10 +71,6 @@ export const useAuthStore = create<AuthStore>()(
           if (response.success && response.data) {
             const { user, accessToken, refreshToken } = response.data;
             
-            // Store tokens in localStorage for API client interceptors
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
-            
             set({
               user,
               accessToken,
@@ -87,9 +81,9 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             throw new Error(response.error || '회원가입에 실패했습니다.');
           }
-        } catch (error) {
+        } catch (error: any) {
           set({ isLoading: false });
-          throw error;
+          throw new Error(error?.response?.data?.error || error?.message || '회원가입에 실패했습니다.');
         }
       },
 
@@ -101,10 +95,6 @@ export const useAuthStore = create<AuthStore>()(
           if (response.success && response.data) {
             const { user, accessToken, refreshToken } = response.data;
             
-            // Store tokens in localStorage for API client interceptors
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
-            
             set({
               user,
               accessToken,
@@ -115,23 +105,24 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             throw new Error(response.error || '데모 로그인에 실패했습니다.');
           }
-        } catch (error) {
+        } catch (error: any) {
           set({ isLoading: false });
-          throw error;
+          throw new Error(error?.response?.data?.error || error?.message || '데모 로그인에 실패했습니다.');
         }
       },
 
       logout: async () => {
+        const { refreshToken } = get();
         set({ isLoading: true });
+        
         try {
-          await apiClient.logout();
+          if (refreshToken) {
+            await apiClient.logout();
+          }
         } catch (error) {
-          console.error('Logout error:', error);
+          console.error('Logout API error:', error);
+          // Continue with local logout even if API call fails
         } finally {
-          // Clear tokens from localStorage
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          
           set({
             ...initialState,
           });
@@ -139,9 +130,6 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       setTokens: (accessToken: string, refreshToken: string) => {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        
         set({
           accessToken,
           refreshToken,
@@ -157,9 +145,6 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       clearAuth: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        
         set({
           ...initialState,
         });
@@ -170,11 +155,24 @@ export const useAuthStore = create<AuthStore>()(
           const response = await apiClient.getCurrentUser();
           if (response.success && response.data) {
             set({ user: response.data });
+          } else {
+            throw new Error('Failed to fetch user data');
           }
         } catch (error) {
           console.error('Failed to refresh user data:', error);
-          // If refresh fails, might need to logout
+          // If refresh fails, clear auth
           get().clearAuth();
+          throw error;
+        }
+      },
+
+      // Initialize auth state on app start
+      initializeAuth: () => {
+        const state = get();
+        if (state.accessToken && state.refreshToken) {
+          set({ isAuthenticated: true });
+        } else {
+          set({ isAuthenticated: false });
         }
       },
     }),

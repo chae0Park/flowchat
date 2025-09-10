@@ -41,8 +41,9 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 8080;
+//const PORT = process.env.PORT || 8080; OG
 const HOST = process.env.HOST || 'localhost';
+const PORT = parseInt(process.env.PORT || '8080', 10);
 
 // Initialize services
 const databaseService = new DatabaseService();
@@ -70,7 +71,8 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files
+// Static files 
+//todo: multer 설정 되어 있는지 찾아보기
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check
@@ -135,7 +137,7 @@ process.on('SIGINT', async () => {
 });
 
 // Start server
-server.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => { //values for host: localhost and port: 8080
   console.log(`🚀 FlowTalk Server running on http://${HOST}:${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔌 WebSocket enabled on port ${PORT}`);

@@ -49,6 +49,7 @@ const generateTokens = (user: any) => {
 
 // Register
 router.post('/register', asyncHandler(async (req: Request, res: Response) => {
+  console.log('📢Register request:', req.body);
   const { name, email, password } = registerSchema.parse(req.body);
 
   const existingUser = await db.user.findUnique({ where: { email } });

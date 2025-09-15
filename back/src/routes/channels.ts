@@ -109,7 +109,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: channel,
     message: 'Channel created successfully'
@@ -189,7 +189,7 @@ router.get('/:channelId', requireChannelAccess, asyncHandler(async (req: Authent
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: channel
   });
@@ -242,7 +242,7 @@ router.put('/:channelId', requireChannelAccess, asyncHandler(async (req: Authent
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: updatedChannel,
     message: 'Channel updated successfully'
@@ -290,7 +290,7 @@ router.delete('/:channelId', requireChannelAccess, asyncHandler(async (req: Auth
     where: { id: channelId }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Channel deleted successfully'
   });
@@ -357,7 +357,7 @@ router.post('/:channelId/join', asyncHandler(async (req: AuthenticatedRequest, r
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Joined channel successfully'
   });
@@ -430,7 +430,7 @@ router.post('/:channelId/members', requireChannelAccess, asyncHandler(async (req
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: newMember,
     message: 'Member added successfully'

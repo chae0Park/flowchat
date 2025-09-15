@@ -77,7 +77,7 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req: Authentic
     url: fileRecord.url
   };
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: response,
     message: 'File uploaded successfully'
@@ -128,7 +128,7 @@ router.post('/upload-multiple', upload.array('files', 10), asyncHandler(async (r
     url: record.url
   }));
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: response,
     message: `${files.length} files uploaded successfully`
@@ -179,7 +179,7 @@ router.get('/:fileId', asyncHandler(async (req: AuthenticatedRequest, res:Respon
     }
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: file
   });
@@ -228,7 +228,7 @@ router.get('/channel/:channelId', requireChannelAccess, asyncHandler(async (req:
     db.fileAttachment.count({ where })
   ]);
 
-  res.json({
+  return res.json({
     success: true,
     data: files,
     pagination: {
@@ -308,7 +308,7 @@ router.get('/workspace/:workspaceId', asyncHandler(async (req: AuthenticatedRequ
     db.fileAttachment.count({ where })
   ]);
 
-  res.json({
+  return res.json({
     success: true,
     data: files,
     pagination: {
@@ -362,7 +362,7 @@ router.get('/user/my-files', asyncHandler(async (req: AuthenticatedRequest, res:
     db.fileAttachment.count({ where })
   ]);
 
-  res.json({
+  return res.json({
     success: true,
     data: files,
     pagination: {
@@ -429,7 +429,7 @@ router.delete('/:fileId', asyncHandler(async (req: AuthenticatedRequest, res:Res
   // TODO: Delete actual file from filesystem
   // fs.unlinkSync(path.join(process.env.UPLOAD_PATH || './uploads', file.url.split('/').pop()));
 
-  res.json({
+  return res.json({
     success: true,
     message: 'File deleted successfully'
   });
@@ -523,7 +523,7 @@ router.get('/search', asyncHandler(async (req: AuthenticatedRequest, res:Respons
     db.fileAttachment.count({ where })
   ]);
 
-  res.json({
+  return res.json({
     success: true,
     data: files,
     pagination: {

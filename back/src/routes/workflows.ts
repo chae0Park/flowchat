@@ -84,7 +84,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res:Response) =>
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: workflow,
     message: 'Workflow created successfully'
@@ -176,7 +176,7 @@ router.get('/:workflowId', asyncHandler(async (req: AuthenticatedRequest, res:Re
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: workflow
   });
@@ -222,7 +222,7 @@ router.put('/:workflowId', asyncHandler(async (req: AuthenticatedRequest, res:Re
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: updatedWorkflow,
     message: 'Workflow updated successfully'
@@ -262,7 +262,7 @@ router.delete('/:workflowId', asyncHandler(async (req: AuthenticatedRequest, res
     where: { id: workflowId }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Workflow deleted successfully'
   });
@@ -307,7 +307,7 @@ router.patch('/:workflowId/toggle', asyncHandler(async (req: AuthenticatedReques
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: updatedWorkflow,
     message: `Workflow ${updatedWorkflow.isActive ? 'activated' : 'deactivated'} successfully`
@@ -374,7 +374,7 @@ router.post('/:workflowId/execute', asyncHandler(async (req: AuthenticatedReques
     message: 'Workflow executed successfully (simulated)'
   };
 
-  res.json({
+  return res.json({
     success: true,
     data: executionResult,
     message: 'Workflow executed successfully'
@@ -426,7 +426,7 @@ router.get('/:workflowId/executions', asyncHandler(async (req: AuthenticatedRequ
     actionsExecuted: Array.isArray(workflow.actions) ? workflow.actions.length : null
   }));
 
-  res.json({
+  return res.json({
     success: true,
     data: mockExecutions,
     pagination: {

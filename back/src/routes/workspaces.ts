@@ -87,7 +87,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res:Response) =>
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: workspace,
     message: 'Workspace created successfully'
@@ -164,7 +164,7 @@ router.get('/:workspaceId', requireWorkspaceAccess, asyncHandler(async (req: Aut
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: workspace
   });
@@ -238,9 +238,8 @@ router.post('/:workspaceId/invite', requireWorkspaceAccess, asyncHandler(async (
     });
   }
 
-  // TODO: Send invitation emails
   // For now, just return success
-  res.json({
+  return res.json({
     success: true,
     message: `Invitations sent to ${emails.length} email(s)`,
     data: { emails, message }
@@ -307,7 +306,7 @@ router.patch('/:workspaceId/members/:userId', requireWorkspaceAccess, requireRol
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: member,
     message: 'Member role updated successfully'
@@ -344,7 +343,7 @@ router.delete('/:workspaceId/members/:userId', requireWorkspaceAccess, requireRo
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Member removed successfully'
   });

@@ -35,7 +35,7 @@ const resetPasswordSchema = z.object({
   password: z.string().min(6).max(100)
 });
 
-// Helper
+// Helper -token generator
 const generateTokens = (user: any) => {
   const payload: TokenPayload = {
     userId: user.id,
@@ -97,7 +97,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: { user, accessToken, refreshToken },
     message: 'User registered successfully'
@@ -122,12 +122,25 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
       preferences: true
     }
   });
+  // email or password incorrect
+  // if (!user || !(await bcrypt.compare(password, user.password))) {
+  //   return res.status(401).json({ success: false, error: 'Invalid credentials' });
+  // }
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ success: false, error: 'Invalid credentials' });
+   if (!user) {
+    console.log('📢No user found with email:', email);
+    return res.status(401).json({ success: false, error: 'wrong email mate' });
+  }else if( !(await bcrypt.compare(password, user.password))){
+    console.log('📢Password mismatch for user:', email);
+    return res.status(401).json({ success: false, error: 'wrong password mate' });
   }
-
+  
   const { accessToken, refreshToken } = generateTokens(user);
+
+   //? solution: 기존 생성된 모든 토큰들 삭제 후 새로 토큰 생성하여 하나만 저장
+  await db.refreshToken.deleteMany({
+    where: { userId: user.id },
+  });
 
   await db.refreshToken.create({
     data: {
@@ -144,7 +157,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
 
   const { password: _, ...userWithoutPassword } = user;
 
-  res.json({
+  return res.json({
     success: true,
     data: { user: userWithoutPassword, accessToken, refreshToken },
     message: 'Login successful'
@@ -152,7 +165,6 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // Refresh Token
-//! 9/11 오전 8시 기준 로그인 할 때 여기서 에러 발생하고 있음 
 router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
   if (!refreshToken) {
@@ -179,7 +191,7 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: { accessToken, refreshToken: newRefresh }
   });
@@ -218,7 +230,7 @@ router.post('/forgot-password', asyncHandler(async (req: Request, res: Response)
     // TODO: emailService.send(user.email, resetToken)
   }
 
-  res.json({
+  return res.json({
     success: true,
     message: 'If account exists, reset link has been sent'
   });
@@ -244,15 +256,15 @@ router.post('/reset-password', asyncHandler(async (req:Request, res: Response) =
     await redis.del(`password_reset:${decoded.userId}`);
     await db.refreshToken.deleteMany({ where: { userId: decoded.userId } });
 
-    res.json({ success: true, message: 'Password reset complete' });
+    return res.json({ success: true, message: 'Password reset complete' });
   } catch {
-    res.status(400).json({ success: false, error: 'Invalid or expired token' });
+    return res.status(400).json({ success: false, error: 'Invalid or expired token' });
   }
 }));
 
 // Current user info
 router.get('/me', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  res.json({ success: true, data: req.user });
+  return res.json({ success: true, data: req.user });
 }));
 
 export default router;

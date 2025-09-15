@@ -119,7 +119,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res:Response) =>
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: message,
     message: 'Message created successfully'
@@ -169,7 +169,7 @@ router.get('/:messageId', asyncHandler(async (req: AuthenticatedRequest, res:Res
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: message
   });
@@ -223,7 +223,7 @@ router.put('/:messageId', asyncHandler(async (req: AuthenticatedRequest, res:Res
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: updatedMessage,
     message: 'Message updated successfully'
@@ -258,7 +258,7 @@ router.delete('/:messageId', asyncHandler(async (req: AuthenticatedRequest, res:
     where: { id: messageId }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Message deleted successfully'
   });
@@ -305,7 +305,7 @@ router.post('/:messageId/reactions', asyncHandler(async (req: AuthenticatedReque
       where: { id: existingReaction.id }
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Reaction removed'
     });
@@ -324,7 +324,7 @@ router.post('/:messageId/reactions', asyncHandler(async (req: AuthenticatedReque
       }
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: reaction,
       message: 'Reaction added'

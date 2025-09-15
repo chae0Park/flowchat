@@ -95,7 +95,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: event,
     message: 'Event created successfully'
@@ -286,7 +286,7 @@ router.get('/:eventId', asyncHandler(async (req: AuthenticatedRequest, res: Resp
     isAttending: event.attendees.some(attendee => attendee.user.id === req.user!.id)
   };
 
-  res.json({
+  return res.json({
     success: true,
     data: eventWithAttendance
   });
@@ -342,7 +342,7 @@ router.put('/:eventId', asyncHandler(async (req: AuthenticatedRequest, res: Resp
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: updatedEvent,
     message: 'Event updated successfully'
@@ -382,7 +382,7 @@ router.delete('/:eventId', asyncHandler(async (req: AuthenticatedRequest, res:Re
     where: { id: eventId }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Event deleted successfully'
   });
@@ -432,7 +432,7 @@ router.post('/:eventId/join', asyncHandler(async (req: AuthenticatedRequest, res
     data: { eventId, userId: req.user!.id }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Joined event successfully'
   });
@@ -510,7 +510,7 @@ router.post('/:eventId/attendees', asyncHandler(async (req: AuthenticatedRequest
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: attendee,
     message: 'Attendee added successfully'
@@ -550,7 +550,7 @@ router.delete('/:eventId/attendees/:userId', asyncHandler(async (req: Authentica
     where: { eventId, userId }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Attendee removed successfully'
   });

@@ -84,7 +84,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: poll,
     message: 'Poll created successfully'
@@ -227,7 +227,7 @@ router.get('/:pollId', asyncHandler(async (req: AuthenticatedRequest, res: Respo
     hasExpired: poll.expiresAt ? new Date() > poll.expiresAt : false
   };
 
-  res.json({
+  return res.json({
     success: true,
     data: pollWithStats
   });
@@ -330,7 +330,7 @@ router.post('/:pollId/vote', asyncHandler(async (req: AuthenticatedRequest, res:
     )
   );
 
-  res.json({
+  return res.json({
     success: true,
     data: votes,
     message: 'Vote recorded successfully'
@@ -372,7 +372,7 @@ router.delete('/:pollId/vote/:optionId', asyncHandler(async (req: AuthenticatedR
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Vote removed successfully'
   });
@@ -433,7 +433,7 @@ router.put('/:pollId', asyncHandler(async (req: AuthenticatedRequest, res:Respon
     }
   });
 
-  res.json({
+  return res.json({
     success: true,
     data: updatedPoll,
     message: 'Poll updated successfully'
@@ -473,7 +473,7 @@ router.delete('/:pollId', asyncHandler(async (req: AuthenticatedRequest, res:Res
     where: { id: pollId }
   });
 
-  res.json({
+  return res.json({
     success: true,
     message: 'Poll deleted successfully'
   });

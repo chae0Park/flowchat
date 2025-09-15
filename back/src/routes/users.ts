@@ -89,7 +89,7 @@ router.get('/:userId', asyncHandler(async (req: AuthenticatedRequest, res:Respon
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: user
   });

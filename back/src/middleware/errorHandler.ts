@@ -63,6 +63,13 @@ export const notFound = (req: Request, res: Response, next: NextFunction) => {
   next(error);
 };
 
+//! 지워도 됨 
+// export const asyncHandler = (fn: (req: Request, res: Response,  next: NextFunction) => Promise<any|void> ) => {
+//   return (req: Request, res: Response, next: NextFunction) => {
+//     Promise.resolve(fn(req, res, next)).catch(next);
+//   };
+// };
+
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);

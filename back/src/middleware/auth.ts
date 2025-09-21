@@ -7,7 +7,7 @@ export const authenticateToken = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => {
+) : Promise<void|any> => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
@@ -69,7 +69,7 @@ export const authenticateToken = async (
 };
 
 export const requireRole = (roles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void | Response => {
     if (!req.user) {
       return res.status(401).json({ 
         success: false, 
@@ -92,7 +92,7 @@ export const requireWorkspaceAccess = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void | Response> => {
   try {
     const workspaceId = req.params.workspaceId || req.body.workspaceId;
     
@@ -118,7 +118,7 @@ export const requireWorkspaceAccess = async (
     }
 
     req.body.workspaceMembership = membership;
-    next();
+    return next();
   } catch (error) {
     console.error('Workspace access middleware error:', error);
     return res.status(500).json({ 
@@ -132,7 +132,7 @@ export const requireChannelAccess = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void | Response> => {
   try {
     const channelId = req.params.channelId || req.body.channelId;
     
@@ -157,7 +157,7 @@ export const requireChannelAccess = async (
       });
     }
 
-    next();
+    return next();
   } catch (error) {
     console.error('Channel access middleware error:', error);
     return res.status(500).json({ 

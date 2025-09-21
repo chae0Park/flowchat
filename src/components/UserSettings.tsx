@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 import { 
   ArrowLeft, 
   User, 
@@ -24,7 +24,8 @@ const UserSettings: React.FC = () => {
     return false;
   });
   
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('profile');
@@ -50,6 +51,10 @@ const UserSettings: React.FC = () => {
     }
     localStorage.setItem('darkMode', isDarkMode.toString());
   }, [isDarkMode]);
+
+  if (!isAuthenticated || !user) {
+    return <p>로그인이 필요합니다.</p>;
+  }
 
   const toggleDarkMode = () => {
     setIsDarkMode(prev => !prev);

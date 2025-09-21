@@ -159,5 +159,6 @@ export const useAuth = () => {
     // Additional utilities
     refreshUserData,
     clearAuth,
+    userQuery
   };
 };

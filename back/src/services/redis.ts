@@ -149,7 +149,7 @@ export class RedisService {
       await this.client.ping();
       return { status: 'healthy', timestamp: new Date().toISOString() };
     } catch (error) {
-      return { status: 'unhealthy', error: error.message, timestamp: new Date().toISOString() };
+      return { status: 'unhealthy', error: (error as Error).message, timestamp: new Date().toISOString() };
     }
   }
 }

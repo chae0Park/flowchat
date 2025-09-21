@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth'; // maybe it's ok to delete this
 import { useChat } from '../contexts/ChatContext';
 import { 
   MessageCircle, 
@@ -22,6 +22,7 @@ import {
   Moon,
   Zap
 } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
 
 const Dashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -31,8 +32,10 @@ const Dashboard: React.FC = () => {
     }
     return false;
   });
-  
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const { 
     messages, 
     channels, 
@@ -70,6 +73,10 @@ const Dashboard: React.FC = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  if (!isAuthenticated || !user) {
+    return <p>로그인이 필요합니다.</p>;
+  }
 
   useEffect(() => {
     if (messagesRef.current) {

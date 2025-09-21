@@ -49,7 +49,7 @@ const generateTokens = (user: any) => {
 
 // Register
 router.post('/register', asyncHandler(async (req: Request, res: Response) => {
-  console.log('📢Register request:', req.body);
+  
   const { name, email, password } = registerSchema.parse(req.body);
 
   const existingUser = await db.user.findUnique({ where: { email } });
@@ -123,17 +123,17 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
     }
   });
   // email or password incorrect
-  // if (!user || !(await bcrypt.compare(password, user.password))) {
-  //   return res.status(401).json({ success: false, error: 'Invalid credentials' });
-  // }
-
-   if (!user) {
-    console.log('📢No user found with email:', email);
-    return res.status(401).json({ success: false, error: 'wrong email mate' });
-  }else if( !(await bcrypt.compare(password, user.password))){
-    console.log('📢Password mismatch for user:', email);
-    return res.status(401).json({ success: false, error: 'wrong password mate' });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
+
+  //  if (!user) {
+  //   console.log('📢No user found with email:', email);
+  //   return res.status(401).json({ success: false, error: 'wrong email mate' });
+  // }else if(!(await bcrypt.compare(password, user.password))){
+  //   console.log('📢Password mismatch for user:', email, password, user.password);
+  //   return res.status(401).json({ success: false, error: 'wrong password mate', password, userPassword: user.password });
+  // }
   
   const { accessToken, refreshToken } = generateTokens(user);
 

@@ -32,9 +32,10 @@ const AuthPage: React.FC = () => {
     setError('');
 
     try {
-      if (isLogin) {
+      if (isLogin) { // 로그인 탭일 때 isLogin true
         await login({ email: formData.email, password: formData.password });
-      } else {
+      } else { // 아닐땐 : 회원가입 
+
         if (formData.password !== formData.confirmPassword) {
           throw new Error('비밀번호가 일치하지 않습니다.');
         }
@@ -43,6 +44,7 @@ const AuthPage: React.FC = () => {
           email: formData.email, 
           password: formData.password 
         });
+
       }
       navigate('/dashboard');
     } catch (err: any) {
@@ -101,7 +103,7 @@ const AuthPage: React.FC = () => {
             <div className="flex bg-gray-100 rounded-full p-1">
               <button
                 onClick={() => {
-                  setIsLogin(true);
+                  setIsLogin(true); 
                   setError('');
                 }}
                 className={`flex-1 py-3 px-4 rounded-full font-semibold transition-all ${

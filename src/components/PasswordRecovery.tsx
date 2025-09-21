@@ -36,7 +36,7 @@ const PasswordRecovery: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
+      //todo: Simulate API call -> Replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsSuccess(true);
     } catch (err) {

@@ -1,3 +1,4 @@
+//src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
@@ -10,7 +11,6 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   loginDemo: () => Promise<void>;
   logout: () => void;
@@ -40,28 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser: User = {
-        id: '1',
-        name: '김민수',
-        email,
-        avatar: '김',
-        status: 'online'
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('flowtalk_user', JSON.stringify(mockUser));
-    } catch (error) {
-      throw new Error('로그인에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //login은 이미 /AuthPage + useAuth 에서 구현되어 있기때문에 여기선 필요없음 
 
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
@@ -115,7 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, loginDemo, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, signup, loginDemo, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

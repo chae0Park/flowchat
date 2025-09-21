@@ -162,16 +162,22 @@ const Dashboard: React.FC = () => {
               <div className="text-sm opacity-80 dark:opacity-70">FlowTalk</div>
             </div>
           </div>
-          
+          {/* 이 div 주변에 오면 커서 생기면서 설정페이지로 갈 수 있도록 */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/20 dark:bg-white/30 flex items-center justify-center font-semibold">
-              {user.avatar}
-            </div>
-            <div className="flex-1">
-              <div className="font-medium">{user.name}</div>
-              <div className="text-xs opacity-70 dark:opacity-60 flex items-center gap-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                온라인
+            <div
+              className="flex items-center gap-3 flex-1 cursor-pointer"
+              onClick={() => navigate('/settings')}
+            >
+              <div className="w-8 h-8 rounded-full bg-white/20 dark:bg-white/30 flex items-center justify-center font-semibold">
+                {user.avatar}
+              </div>
+              <div className="flex-1">
+                {/* 🚨 이거 user.name 고쳐야함  */}
+                <div className="font-medium">{user.name}</div>
+                <div className="text-xs opacity-70 dark:opacity-60 flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  온라인
+                </div>
               </div>
             </div>
             <button

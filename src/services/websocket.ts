@@ -1,3 +1,4 @@
+//src/services/websocket.ts
 // WebSocket service for real-time communication
 export interface WebSocketMessage {
   type: 'message' | 'typing' | 'user_joined' | 'user_left' | 'reaction' | 'file_upload';

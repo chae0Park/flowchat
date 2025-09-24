@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth'; // maybe it's ok to delete this
+import { useAuthStore } from '../stores/authStore';
+import { useAuth } from '../hooks/useAuth'; 
 import { useChat } from '../contexts/ChatContext';
 import { 
   MessageCircle, 
@@ -22,7 +23,6 @@ import {
   Moon,
   Zap
 } from 'lucide-react';
-import { useAuthStore } from '../stores/authStore';
 
 const Dashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {

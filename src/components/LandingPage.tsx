@@ -1,7 +1,8 @@
 // src/components/LandingPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+//import { useAuthStore } from '../stores/authStore';
 import { ArrowRight, MessageCircle, Search, Upload, Link, Phone, Zap } from 'lucide-react';
 
 const LandingPage: React.FC = () => {

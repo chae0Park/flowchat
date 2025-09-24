@@ -1,3 +1,4 @@
+//src/hooks/useWebSocket.ts
 import { useEffect, useRef, useState } from 'react';
 import { WebSocketService, MockWebSocketService, TypingIndicator } from '../services/websocket';
 

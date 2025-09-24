@@ -95,7 +95,7 @@ export const useAuth = () => {
       }
       throw new Error(response.error || 'Failed to fetch user');
     },
-    enabled: isAuthenticated && !!user,
+    enabled: isAuthenticated && !!user && user.id !== 'demo', // 👈 demo 계정일 때는 요청 안 함
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error: any) => {
       // Don't retry on 401 errors

@@ -1,8 +1,8 @@
 // src/stores/authStore.ts
-//purpose: Manage authentication state using Zustand with persistence
+// purpose: Manage authentication state using Zustand with persistence
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { apiClient, User, AuthResponse } from '../services/api';
+import { apiClient, User } from '../services/api';
 
 interface AuthState {
   user: User | null;
@@ -90,24 +90,33 @@ export const useAuthStore = create<AuthStore>()(
       loginDemo: async () => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.loginDemo();
-          
-          if (response.success && response.data) {
-            const { user, accessToken, refreshToken } = response.data;
-            
-            set({
-              user,
-              accessToken,
-              refreshToken,
-              isAuthenticated: true,
-              isLoading: false,
-            });
-          } else {
-            throw new Error(response.error || '데모 로그인에 실패했습니다.');
-          }
-        } catch (error: any) {
+          // API 호출 대신 딜레이만 주기
+          await new Promise((resolve) => setTimeout(resolve, 800));
+
+          const demoUser: User = {
+            id: 'demo',
+            name: '데모 사용자',
+            email: 'demo@flowtalk.com',
+            avatar: '데',
+            status: 'FlowTalk 체험 중 🚀',
+            role: 'demo', // 임시 권한
+            createdAt: new Date().toISOString(), // 현재 시각 문자열
+            preferences: {}, // 빈 객체
+          };
+
+          set({
+            user: demoUser,
+            accessToken: 'demo-access-token',
+            refreshToken: 'demo-refresh-token',
+            isAuthenticated: true,
+            isLoading: false,
+          });
+
+          // 필요하다면 직접 localStorage에도 저장 가능
+          localStorage.setItem('flowtalk_user', JSON.stringify(demoUser));
+        } catch (error) {
           set({ isLoading: false });
-          throw new Error(error?.response?.data?.error || error?.message || '데모 로그인에 실패했습니다.');
+          throw new Error('데모 로그인에 실패했습니다.');
         }
       },
 

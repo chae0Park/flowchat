@@ -1,6 +1,8 @@
+//src/contexts/ChatContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { useAuth } from './AuthContext';
+import { useAuthStore } from '../stores/authStore';
+
 
 interface Message {
   id: string;
@@ -45,8 +47,8 @@ export const useChat = () => {
 };
 
 export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
   const [currentChannel, setCurrentChannel] = useState('general');
+  const user = useAuthStore((state) => state.user);
   
   // WebSocket integration
   const {

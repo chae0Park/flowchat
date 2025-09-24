@@ -15,12 +15,10 @@ import PasswordRecovery from './components/PasswordRecovery';
 import IntegrationsPage from './components/IntegrationsPage';
 import HelpCategoryPage from './components/HelpCategoryPage';
 import ContactPage from './components/ContactPage';
-import { AuthProvider } from './contexts/AuthContext';
 import { ChatProvider } from './contexts/ChatContext';
 
 function App() {
   return (
-    <AuthProvider>
       <ChatProvider>
         <Router>
           <div className="min-h-screen bg-gray-50">
@@ -44,7 +42,6 @@ function App() {
           </div>
         </Router>
       </ChatProvider>
-    </AuthProvider>
   );
 }
 

@@ -507,7 +507,7 @@ const Dashboard: React.FC = () => {
                   setMessage(e.target.value);
                   setIsTyping(e.target.value.length > 0);
                 }}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder="메시지를 입력하세요..."
                 className="w-full p-3 bg-gray-50 dark:bg-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-200 dark:border-gray-600 min-h-[44px] max-h-32 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 rows={1}

@@ -64,37 +64,6 @@ router.put('/me', asyncHandler(async (req: AuthenticatedRequest, res:Response) =
   });
 }));
 
-// Get user by ID
-router.get('/:userId', asyncHandler(async (req: AuthenticatedRequest, res:Response) => {
-  const { userId } = req.params;
-
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      status: true,
-      role: true,
-      createdAt: true,
-      lastActive: true
-    }
-  });
-
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      error: 'User not found'
-    });
-  }
-
-  return res.json({
-    success: true,
-    data: user
-  });
-}));
-
 // Search users
 router.get('/search', asyncHandler(async (req: AuthenticatedRequest, res:Response) => {
   const { q: query, page = 1, limit = 20 } = searchUsersSchema.parse(req.query);
@@ -144,6 +113,39 @@ router.get('/search', asyncHandler(async (req: AuthenticatedRequest, res:Respons
 
   res.json(response);
 }));
+
+
+// Get user by ID
+router.get('/:userId', asyncHandler(async (req: AuthenticatedRequest, res:Response) => {
+  const { userId } = req.params;
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatar: true,
+      status: true,
+      role: true,
+      createdAt: true,
+      lastActive: true
+    }
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      error: 'User not found'
+    });
+  }
+
+  return res.json({
+    success: true,
+    data: user
+  });
+}));
+
 
 // Update user status
 router.patch('/me/status', asyncHandler(async (req: AuthenticatedRequest, res:Response) => {

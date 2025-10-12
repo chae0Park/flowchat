@@ -1,7 +1,7 @@
 // src/hooks/useAuth.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
-import { apiClient, LoginRequest, RegisterRequest } from '../services/api';
+import { authApi, LoginRequest, RegisterRequest } from '../services/authApi';
 import { useEffect } from 'react';
 
 export const useAuth = () => {
@@ -89,7 +89,7 @@ export const useAuth = () => {
   const userQuery = useQuery({
     queryKey: ['user'],
     queryFn: async () => {
-      const response = await apiClient.getCurrentUser();
+      const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
         return response.data;
       }

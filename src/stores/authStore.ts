@@ -2,7 +2,7 @@
 // purpose: Manage authentication state using Zustand with persistence
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { apiClient, User } from '../services/api';
+import { authApi, User } from '../services/authApi';
 
 interface AuthState {
   user: User | null;
@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthStore>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.login({ email, password });
+          const response = await authApi.login({ email, password });
           
           if (response.success && response.data) {
             const { user, accessToken, refreshToken } = response.data;
@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthStore>()(
       register: async (name: string, email: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.register({ name, email, password });
+          const response = await authApi.register({ name, email, password });
           
           if (response.success && response.data) {
             const { user, accessToken, refreshToken } = response.data;
@@ -126,7 +126,7 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           if (refreshToken) {
-            await apiClient.logout();
+            await authApi.logout();
           }
         } catch (error) {
           console.error('Logout API error:', error);
@@ -161,7 +161,7 @@ export const useAuthStore = create<AuthStore>()(
 
       refreshUserData: async () => {
         try {
-          const response = await apiClient.getCurrentUser();
+          const response = await authApi.getCurrentUser();
           if (response.success && response.data) {
             set({ user: response.data });
           } else {

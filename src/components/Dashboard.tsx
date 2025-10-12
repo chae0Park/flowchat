@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CreateChannelModal from './CreateChannelModal';
 import { useAuthStore } from '../stores/authStore';
 import { useAuth } from '../hooks/useAuth'; 
 import { useChat } from '../contexts/ChatContext';
@@ -42,7 +43,9 @@ const Dashboard: React.FC = () => {
     currentChannel, 
     addMessage, 
     switchChannel, 
-    toggleReaction 
+    createChannel,
+    toggleReaction,
+    startDirectMessage 
   } = useChat();
   
   const [message, setMessage] = useState('');
@@ -50,7 +53,9 @@ const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createModalType, setCreateModalType] = useState<'channel' | 'dm'>('channel');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -139,6 +144,19 @@ const Dashboard: React.FC = () => {
     navigate('/');
   };
 
+   const handleCreateChannel = (channelData: { name: string; description: string; isPrivate: boolean }) => {
+    createChannel(channelData);
+  };
+
+  const handleStartDM = (userId: string) => {
+    startDirectMessage(userId);
+  };
+
+   const openCreateModal = (type: 'channel' | 'dm') => {
+    setCreateModalType(type);
+    setShowCreateModal(true);
+  };
+
   const currentChannelData = channels.find(ch => ch.id === currentChannel);
   const currentChannelName = currentChannelData?.type === 'dm' 
     ? currentChannelData.name 
@@ -223,7 +241,9 @@ const Dashboard: React.FC = () => {
               <div className="text-xs font-semibold opacity-70 dark:opacity-60 uppercase tracking-wide">
                 채널
               </div>
-              <button className="p-1 hover:bg-white/10 dark:hover:bg-white/20 rounded transition-colors">
+              <button  
+                onClick={() => openCreateModal('channel')}
+                className="p-1 hover:bg-white/10 dark:hover:bg-white/20 rounded transition-colors">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
@@ -253,7 +273,9 @@ const Dashboard: React.FC = () => {
               <div className="text-xs font-semibold opacity-70 dark:opacity-60 uppercase tracking-wide">
                 다이렉트 메시지
               </div>
-              <button className="p-1 hover:bg-white/10 dark:hover:bg-white/20 rounded transition-colors">
+              <button 
+                 onClick={() => openCreateModal('dm')}
+                className="p-1 hover:bg-white/10 dark:hover:bg-white/20 rounded transition-colors">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
@@ -505,6 +527,15 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Create Channel/DM Modal */}
+      <CreateChannelModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        type={createModalType}
+        onCreateChannel={handleCreateChannel}
+        onStartDM={handleStartDM}
+      />
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (

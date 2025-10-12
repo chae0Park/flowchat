@@ -1,4 +1,5 @@
 //src/contexts/ChatContext.tsx
+//메세지 mock data
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useAuthStore } from '../stores/authStore';
@@ -34,6 +35,8 @@ interface ChatContextType {
   toggleReaction: (messageId: string, emoji: string) => void;
   searchMessages: (query: string) => Message[];
   sendTyping: (channelId: string, isTyping: boolean) => void;
+  createChannel: (channelData: { name: string; description: string; isPrivate: boolean }) => void;
+  startDirectMessage: (userId: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -62,7 +65,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     onMessage
   } = useWebSocket(user?.id || 'demo', 'mock-token');
   
-  const [channels] = useState<Channel[]>([
+  const [channels, setChannels] = useState<Channel[]>([
     { id: 'general', name: '일반', type: 'channel', unread: 0, active: true },
     { id: 'dev', name: '개발', type: 'channel', unread: 3, active: false },
     { id: 'design', name: '디자인', type: 'channel', unread: 0, active: false },
@@ -219,6 +222,56 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
   };
 
+  const createChannel = (channelData: { name: string; description: string; isPrivate: boolean }) => {
+    const newChannel: Channel = {
+      id: `channel_${Date.now()}`,
+      name: channelData.name,
+      type: 'channel',
+      unread: 0,
+      active: false,
+      members: ['김민수'] // Current user as creator
+    };
+    setChannels(prev => [...prev, newChannel]);
+    setCurrentChannel(newChannel.id);
+  };
+const startDirectMessage = (userId: string) => {
+    // Mock user data - in real app, this would come from user management
+    const users = [
+      { id: '1', name: '김민수', avatar: '김' },
+      { id: '2', name: '이지혜', avatar: '이' },
+      { id: '3', name: '박준호', avatar: '박' },
+      { id: '4', name: '최유진', avatar: '최' },
+      { id: '5', name: '정민호', avatar: '정' },
+      { id: '6', name: '한소영', avatar: '한' }
+    ];
+    
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+    
+    // Check if DM already exists
+    const existingDM = channels.find(ch => 
+      ch.type === 'dm' && ch.name === targetUser.name
+    );
+    
+    if (existingDM) {
+      setCurrentChannel(existingDM.id);
+      return;
+    }
+    
+    // Create new DM
+    const newDM: Channel = {
+      id: `dm_${Date.now()}`,
+      name: targetUser.name,
+      type: 'dm',
+      unread: 0,
+      active: false,
+      members: ['김민수', targetUser.name]
+    };
+    
+    setChannels(prev => [...prev, newDM]);
+    setCurrentChannel(newDM.id);
+  };
+
   return (
     <ChatContext.Provider value={{
       messages,
@@ -229,6 +282,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addMessage,
       switchChannel,
       toggleReaction,
+      createChannel,
+      startDirectMessage,
       searchMessages,
       sendTyping
     }}>

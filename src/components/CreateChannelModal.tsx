@@ -1,56 +1,66 @@
+// src/components/CreateChannelModal.tsx
 import React, { useState } from 'react';
 import { X, Hash, User, Lock, Globe, Search } from 'lucide-react';
-import { useUsers } from '../hooks/useUsers'; // ✅ React Query 훅
-//import { useChatStore } from '../stores/chatStore';
+import { useUsers } from '../hooks/useUsers'; // ✅ 실제 유저 패칭
+import { useCreateChannel } from '../hooks/useChannels'; // ✅ 실제 채널 생성
+import { useAuthStore } from '../stores/authStore';
+import { useStartDM } from '../hooks/useDm'; // ✅ 다이렉트 메시지
+
 
 interface CreateChannelModalProps {
   isOpen: boolean;
   onClose: () => void;
   type: 'channel' | 'dm';
-  onCreateChannel?: (channelData: { name: string; description: string; isPrivate: boolean }) => void;
-  onStartDM?: (userId: string) => void;
+  workspaceId: string; // ✅ 채널 생성 시 필요
+  onCreateChannel?: (channelData: {
+    name: string;
+    description: string;
+    isPrivate: boolean;
+  }) => void;
 }
 
 const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   isOpen,
   onClose,
   type,
-  onCreateChannel,
-  onStartDM,
+  workspaceId,
 }) => {
   const [channelName, setChannelName] = useState('');
   const [channelDescription, setChannelDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // ✅ React Query + Zustand 기반 실제 유저 데이터 패칭
   const { users, isLoading } = useUsers(searchQuery);
+  const createChannel = useCreateChannel(); // ✅ React Query mutation
+  const user = useAuthStore((state) => state.user);
+  const startDM = useStartDM();
 
-  // ✅ Zustand store 내 DM 생성 함수
-  //const { startDirectMessage } = useChatStore();
+  const handleCreateChannel = async () => {
+    if (!channelName.trim()) return;
 
-  const handleCreateChannel = () => {
-    if (channelName.trim() && onCreateChannel) {
-      onCreateChannel({
+    try {
+      await createChannel.mutateAsync({
+        workspaceId,
         name: channelName.trim(),
         description: channelDescription.trim(),
-        isPrivate,
+        type: 'TEXT',
+        visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
+        members: [user?.id || ''],
       });
+
       resetForm();
       onClose();
+    } catch (error) {
+      console.error('채널 생성 실패:', error);
+      alert('채널 생성 중 오류가 발생했습니다.');
     }
   };
 
-  const handleStartDM = (userId: string) => {
-    if (onStartDM) {
-      onStartDM(userId);
-    } 
-    // else {
-    //   startDirectMessage(userId);
-    // }
-    resetForm();
-    onClose();
-  };
+  const handleStartDM = async (targetUserId: string) => {
+  if (!user?.workspaceId) return;
+  await startDM.mutateAsync({ workspaceId: user.workspaceId, targetUserId });
+  onClose();
+};
 
   const resetForm = () => {
     setChannelName('');
@@ -74,10 +84,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           <h3 className="text-lg font-semibold text-gray-900">
             {type === 'channel' ? '새 채널 만들기' : '다이렉트 메시지 시작'}
           </h3>
-          <button
-            onClick={handleClose}
-            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
@@ -85,6 +92,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
         {/* ---------------------- 채널 생성 ---------------------- */}
         {type === 'channel' ? (
           <div className="space-y-4">
+            {/* 채널 이름 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">채널 이름</label>
               <div className="relative">
@@ -98,11 +106,10 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                   maxLength={21}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                소문자, 숫자, 하이픈만 사용 가능 (최대 21자)
-              </p>
+              <p className="text-xs text-gray-500 mt-1">소문자, 숫자, 하이픈만 사용 가능 (최대 21자)</p>
             </div>
 
+            {/* 채널 설명 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">설명 (선택사항)</label>
               <textarea
@@ -114,10 +121,9 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               />
             </div>
 
-            {/* 공개 / 비공개 선택 */}
+            {/* 공개 / 비공개 설정 */}
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">채널 공개 설정</label>
-
               <div className="space-y-2">
                 <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                   <input
@@ -132,9 +138,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                       <Globe className="w-4 h-4 text-green-600" />
                       <span className="font-medium text-gray-900">공개 채널</span>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      워크스페이스의 모든 멤버가 참여할 수 있습니다
-                    </p>
+                    <p className="text-sm text-gray-600">워크스페이스의 모든 멤버가 참여할 수 있습니다</p>
                   </div>
                 </label>
 
@@ -157,6 +161,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               </div>
             </div>
 
+            {/* 버튼 */}
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleClose}
@@ -166,10 +171,10 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               </button>
               <button
                 onClick={handleCreateChannel}
-                disabled={!channelName.trim()}
+                disabled={createChannel.isPending || !channelName.trim()}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                채널 만들기
+                {createChannel.isPending ? '생성 중...' : '채널 만들기'}
               </button>
             </div>
           </div>
@@ -177,9 +182,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           /* ---------------------- 다이렉트 메시지 ---------------------- */
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                메시지를 보낼 사람을 선택하세요
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">메시지를 보낼 사람을 선택하세요</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -192,6 +195,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               </div>
             </div>
 
+            {/* 유저 목록 */}
             <div className="max-h-64 overflow-y-auto space-y-2">
               {isLoading ? (
                 <p className="text-center text-gray-500">로딩 중...</p>
@@ -228,6 +232,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               )}
             </div>
 
+            {/* 취소 버튼 */}
             <div className="pt-4 border-t border-gray-200">
               <button
                 onClick={handleClose}

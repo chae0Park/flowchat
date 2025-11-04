@@ -1,3 +1,5 @@
+//이 후 user 또한 mock 데이터를 context 에 넣어 관리해야 함
+
 //src/contexts/ChatContext.tsx
 //메세지 mock data
 import React, { createContext, useContext, useState, ReactNode } from 'react';

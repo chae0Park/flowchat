@@ -12,7 +12,7 @@ const createChannelSchema = z.object({
   workspaceId: z.string(),
   name: z.string().min(1).max(50).regex(/^[a-z0-9-_]+$/),
   description: z.string().max(500).optional(),
-  type: z.enum(['CHANNEL', 'DM']),
+  type: z.enum(['CHANNEL']),
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
   members: z.array(z.string()).optional()
 });

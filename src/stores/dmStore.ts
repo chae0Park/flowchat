@@ -13,3 +13,5 @@ export const useDMStore = create<DMState>((set) => ({
   addDM: (dm) => set((state) => ({ dms: [...state.dms, dm] })),
   setDMs: (dms) => set({ dms }),
 }));
+
+//TODO: GET 이 있어야 함. 

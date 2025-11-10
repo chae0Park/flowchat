@@ -4,7 +4,7 @@ import { X, Hash, User, Lock, Globe, Search } from 'lucide-react';
 import { useUsers } from '../hooks/useUsers'; // ✅ 실제 유저 패칭
 import { useCreateChannel } from '../hooks/useChannels'; // ✅ 실제 채널 생성
 import { useAuthStore } from '../stores/authStore';
-import { useStartDM } from '../hooks/useDm'; // ✅ 다이렉트 메시지
+import { useStartDM } from '../hooks/useDM'; // ✅ 다이렉트 메시지
 
 
 interface CreateChannelModalProps {
